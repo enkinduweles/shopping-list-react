@@ -1,87 +1,113 @@
 import React from 'react';
+import { Badge, Button, Container, Modal } from 'react-bootstrap';
 import { useSelector, useDispatch } from 'react-redux';
-import cartActions from '../store/actions/cart';
+import * as cartActions from '../store/actions/cart';
 
-const Cart = () => {
-    const cart = useSelector(state => state.cart)
-    const dispatch = useDispatch();
+const Cart = ({ variant, className, onShowModal }) => {
+  const cart = useSelector((state) => state.cart);
+  const dispatch = useDispatch();
 
-    let totalPrice = 0;
+  let totalPrice = 0;
 
-    for(let i = 0; i < cart.Cart.length; i++) {
-        totalPrice += (cart.Cart[i].price * cart.Cart[i].quantity)
-    }
+  for (let i = 0; i < cart.Cart.length; i++) {
+    totalPrice += cart.Cart[i].price * cart.Cart[i].quantity;
+  }
 
-    if(cart.value > 0){
-        localStorage.setItem('dioshopping: cart', JSON.stringify(cart))
-    }
+  if (cart.value > 0) {
+    localStorage.setItem('dioshopping: cart', JSON.stringify(cart));
+  }
 
-    return(
-        <>
-            <button type="button" className="btn btn-info" data-bs-toggle="modal" data-bs-target="#CartModal">
-                <span><i className="fas fa-shopping-cart"></i></span>
-                <span className="badge rounded-pill bg-info text-dark">
-                    {cart.value}
-                </span>
-            </button>
+  return (
+    <>
+      <Button
+        variant={variant}
+        className={`position-relative ${className}`}
+        onClick={() => onShowModal()}
+        size='sm'
+      >
+        <i className='bi bi-cart fs-3'></i>
+        <Badge
+          className='position-absolute top-0 start-100 translate-middle'
+          pill
+        >
+          {cart.value}
+        </Badge>
+      </Button>
 
-            {/* Modal */}
-            <div className="modal fade" id="CartModal" tabIndex="-1" aria-labelledby="CartModalLabel" aria-hidden="true">
-                <div className="modal-dialog">
-                    <div className="modal-content">
-                    <div className="modal-header">
-                    <h5 className="modal-title" id="CartModalLabel">Meu Carrinho</h5>
-                        <button type="button" className="close" data-bs-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                        </button>
+      <Modal
+        scrollable
+        show={cart.showItems}
+        onHide={() => dispatch(cartActions.ShowItems(false))}
+        aria-labelledby='contained-modal-title-vcenter'
+        centered
+        className='text-primary'
+      >
+        <Modal.Header closeButton className='bg-light'>
+          <Modal.Title id='contained-modal-title-vcenter' className='fw-bold'>
+            Meu carrinho
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className='bg-dark'>
+          <Container fluid className='bg-light rounded-2 mb-2'>
+            {cart.Cart.map((item) => {
+              return (
+                <div
+                  key={item.id}
+                  className='d-flex align-items-center mb-4 position-relative'
+                >
+                  <div className='me-3 h-100'>
+                    <img
+                      className='img-fluid img-thumbnail'
+                      src={item.image}
+                      alt={item.Name}
+                      width='100px'
+                    />
+                  </div>
+                  <div className='h-100'>
+                    <h4>{item.name}</h4>
+                    <p>R$ {item.price.toFixed(2)}</p>
+                    <div className='d-flex align-items-center'>
+                      <Badge
+                        className='border-0'
+                        bg='secondary'
+                        as='button'
+                        onClick={() =>
+                          dispatch(cartActions.RemoveItem(cart, item))
+                        }
+                      >
+                        -
+                      </Badge>
+                      <span className='fs-4 mx-2'>{item.quantity}</span>
+                      <Badge
+                        className='border-0'
+                        bg='primary'
+                        as='button'
+                        onClick={() =>
+                          dispatch(cartActions.AddItem(cart, item))
+                        }
+                      >
+                        +
+                      </Badge>
                     </div>
-
-                    <div className="modal-body table-responsive">
-                        <table className="table table-hover">
-                        <thead>
-                            <tr>
-                            <th scope="col"></th>
-                            <th scope="col">Produto</th>
-                            <th scope="col">Qtd</th>
-                            <th scope="col">Preço</th>
-                            <th scope="col"></th>
-                            <th scope="col"></th>
-                            <th scope="col">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {cart.Cart.map( item =>{
-                                return(
-                                    <tr key={item.id}>
-                                        <th><button onClick={()=>dispatch(cartActions.DeleteItem(cart, item))} className="badge bg-danger"><i className="fas fa-window-close"></i></button></th>
-                                        <th><img className="img-fluid img-thumbnail" src={item.image} alt={item.Name} width="50px"/></th>
-                                        <th><span className="badge badge-pill bg-warning">
-                                            {item.quantity}
-                                        </span></th>
-                                        <th>R$ {item.price.toFixed(2)}</th>
-                                        <th><button onClick={()=>dispatch(cartActions.AddItem(cart, item))} className="badge badge-pill bg-primary"><i className="fas fa-plus"></i></button></th>
-                                        <th><button onClick={()=>dispatch(cartActions.RemoveItem(cart, item))} className="badge badge-pill bg-danger"><i className="fas fa-minus"></i></button></th>
-                                        <th>R$ {(item.price * item.quantity).toFixed(2)}</th>
-                                    </tr>
-                                )
-                            })}
-                            <tr>
-                            <th colSpan="2" scope="col">Total</th>
-                            <th colSpan="3">{cart.value} itens</th>
-                            <th colSpan="2">R$ {totalPrice.toFixed(2)}</th>
-                            </tr>
-                        </tbody>
-                        </table>
-                        </div>
-
-                    <div className="modal-footer">
-                        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    </div>
-                    </div>
+                  </div>
+                  <Button
+                    variant='outline-primary border-0 position-absolute end-0 top-0 fs-5'
+                    onClick={() => dispatch(cartActions.DeleteItem(cart, item))}
+                  >
+                    <i class='bi bi-trash'></i>
+                  </Button>
                 </div>
+              );
+            })}
+            <div className='d-flex justify-content-between border-top border-secondary border-2 pt-2'>
+              <p className='fw-bold'>Total ({cart.value}):</p>
+              <span>R$ {totalPrice.toFixed(2)}</span>
             </div>
-        </>
-    )
-}
+          </Container>
+        </Modal.Body>
+      </Modal>
+    </>
+  );
+};
 
 export default Cart;

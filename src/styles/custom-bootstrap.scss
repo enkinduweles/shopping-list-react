@@ -1,0 +1,22 @@
+$theme-colors: (
+  'primary': #616482,
+  'secondary': #999999,
+  'success': #69aa6e,
+  'info': #272b2c,
+  'warning': #d08827,
+  'danger': #f44336,
+  'light': #e3e9e8,
+  'dark': #242d3a,
+);
+
+@import '~bootstrap/scss/bootstrap';
+
+html,
+body,
+#root {
+  height: 100%;
+}
+#root {
+  display: flex;
+  flex-direction: column;
+}
